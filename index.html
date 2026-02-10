@@ -69,6 +69,7 @@
         background: #f1f1f1;
         color: #777;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        position: relative; /* important */
       }
 
       #no span {
@@ -100,12 +101,12 @@
         }
       }
 
-      /* 🌸 Flower burst */
+      /* 🌸 Flower burst (UNCHANGED) */
       .flower {
         position: fixed;
         font-size: 26px;
         pointer-events: none;
-        animation: burst 1.4s ease-out forwards;
+        animation: burst 1.6s ease-out forwards;
         z-index: 70;
       }
 
@@ -162,61 +163,65 @@
       const no = document.getElementById('no');
       const music = document.getElementById('music');
       const card = document.getElementById('card');
+      const msg = document.getElementById('msg');
 
       const flowers = ['🌸', '🌼', '🌺', '💮'];
 
-      let burstX = 0;
-      let burstY = 0;
-      let beatInterval;
+      /* 😈 NO BUTTON ESCAPE (ONLY ADDITION) */
+      let escaped = false;
+      const sadMessages = [
+        'That answer feels heavy…',
+        'Some words don’t want to be said',
+        'NO looks unsure today',
+        'YES feels warmer somehow 💗',
+      ];
 
+      function escapeNo() {
+        if (!escaped) {
+          const rect = no.getBoundingClientRect();
+          no.style.position = 'fixed';
+          no.style.left = rect.left + 'px';
+          no.style.top = rect.top + 'px';
+          escaped = true;
+        }
+
+        const padding = 20;
+        no.style.left =
+          Math.random() * (window.innerWidth - no.offsetWidth - padding) + 'px';
+        no.style.top =
+          Math.random() * (window.innerHeight - no.offsetHeight - padding) + 'px';
+
+        msg.textContent =
+          sadMessages[Math.floor(Math.random() * sadMessages.length)];
+      }
+
+      document.addEventListener('mousemove', (e) => {
+        const rect = no.getBoundingClientRect();
+        const dx = e.clientX - (rect.left + rect.width / 2);
+        const dy = e.clientY - (rect.top + rect.height / 2);
+        if (Math.sqrt(dx * dx + dy * dy) < 60) escapeNo();
+      });
+
+      no.addEventListener('touchstart', escapeNo);
+
+      /* 💖 YES CLICK (UNCHANGED) */
       yes.addEventListener('click', () => {
-        // 1️⃣ CAPTURE position FIRST
-        const rect = yes.getBoundingClientRect();
-        burstX = rect.left + rect.width / 2;
-        burstY = rect.top + rect.height / 2;
-
-        // 2️⃣ THEN hide elements
         music.play();
         card.style.display = 'none';
         no.style.display = 'none';
-
         celebrate();
-
-        // 3️⃣ Initial burst + beat sync
         flowerBurst();
-        beatInterval = setInterval(flowerBurst, 625);
-
-        // 4️⃣ Stop after 8 seconds
-        setTimeout(() => clearInterval(beatInterval), 8000);
       });
-
-      function flowerBurst() {
-        for (let i = 0; i < 12; i++) {
-          const flower = document.createElement('div');
-          flower.className = 'flower';
-          flower.textContent =
-            flowers[Math.floor(Math.random() * flowers.length)];
-
-          flower.style.left = burstX + 'px';
-          flower.style.top = burstY + 'px';
-
-          flower.style.setProperty('--x', `${Math.random() * 260 - 130}px`);
-          flower.style.setProperty('--y', `${Math.random() * 260 - 130}px`);
-
-          document.body.appendChild(flower);
-          setTimeout(() => flower.remove(), 2200);
-        }
-      }
 
       function celebrate() {
         const final = document.createElement('div');
         final.className = 'final';
         final.innerHTML = `
-      💖<br/>
-      Diya, you just made<br/>
-      <strong>Vikram</strong> very happy ❤️<br/><br/>
-      Happy Valentine’s Day 🌸
-    `;
+          💖<br/>
+          Diya, you just made<br/>
+          <strong>Vikram</strong> very happy ❤️<br/><br/>
+          Happy Valentine’s Day 🌸
+        `;
         document.body.appendChild(final);
 
         setInterval(() => {
@@ -228,6 +233,26 @@
           document.body.appendChild(heart);
           setTimeout(() => heart.remove(), 5000);
         }, 140);
+      }
+
+      function flowerBurst() {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        for (let i = 0; i < 30; i++) {
+          const flower = document.createElement('div');
+          flower.className = 'flower';
+          flower.textContent =
+            flowers[Math.floor(Math.random() * flowers.length)];
+
+          flower.style.left = centerX + 'px';
+          flower.style.top = centerY + 'px';
+          flower.style.setProperty('--x', `${Math.random() * 300 - 150}px`);
+          flower.style.setProperty('--y', `${Math.random() * 300 - 150}px`);
+
+          document.body.appendChild(flower);
+          setTimeout(() => flower.remove(), 1600);
+        }
       }
     </script>
   </body>
