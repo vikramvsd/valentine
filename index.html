@@ -40,7 +40,6 @@
         margin-bottom: 25px;
       }
 
-      /* BUTTON ROW — BOTH CENTERED */
       .buttons {
         margin-top: 15px;
         display: flex;
@@ -58,22 +57,18 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        transition: all 0.25s ease;
-        position: relative; /* IMPORTANT */
       }
 
       #yes {
         background: #ff4d6d;
         color: white;
         box-shadow: 0 6px 18px rgba(255, 77, 109, 0.4);
-        z-index: 2;
       }
 
       #no {
         background: #f1f1f1;
         color: #777;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        z-index: 1;
       }
 
       #no span {
@@ -95,11 +90,32 @@
         font-size: 22px;
         animation: fall linear forwards;
         pointer-events: none;
+        z-index: 60;
       }
 
       @keyframes fall {
         to {
           transform: translateY(110vh);
+          opacity: 0;
+        }
+      }
+
+      /* 🌸 Flower burst */
+      .flower {
+        position: fixed;
+        font-size: 26px;
+        pointer-events: none;
+        animation: burst 1.4s ease-out forwards;
+        z-index: 70;
+      }
+
+      @keyframes burst {
+        from {
+          transform: translate(0, 0) scale(0.6);
+          opacity: 1;
+        }
+        to {
+          transform: translate(var(--x), var(--y)) scale(1.2);
           opacity: 0;
         }
       }
@@ -142,77 +158,65 @@
     </audio>
 
     <script>
-      const no = document.getElementById('no');
       const yes = document.getElementById('yes');
-      const msg = document.getElementById('msg');
+      const no = document.getElementById('no');
       const music = document.getElementById('music');
       const card = document.getElementById('card');
 
-      const sadEmojis = ['🥺', '☹️'];
-      const messages = [
-        'That answer feels heavy…',
-        'Some words don’t want to be said',
-        'NO looks unsure today',
-        'YES feels warmer somehow 💗',
-        'I’m right here, though 💕',
-      ];
+      const flowers = ['🌸', '🌼', '🌺', '💮'];
 
-      let i = 0;
-      let escaped = false;
-
-      function escapeNo() {
-        if (!escaped) {
-          // Convert NO from normal layout → floating
-          const rect = no.getBoundingClientRect();
-          no.style.position = 'fixed';
-          no.style.left = rect.left + 'px';
-          no.style.top = rect.top + 'px';
-          escaped = true;
-        }
-
-        const padding = 20;
-        const maxX = window.innerWidth - no.offsetWidth - padding;
-        const maxY = window.innerHeight - no.offsetHeight - padding;
-
-        no.style.left = Math.random() * maxX + 'px';
-        no.style.top = Math.random() * maxY + 'px';
-
-        no.querySelector('span').textContent =
-          sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
-
-        msg.textContent = messages[i++ % messages.length];
-      }
-
-      // Escape when cursor comes close
-      document.addEventListener('mousemove', (e) => {
-        const rect = no.getBoundingClientRect();
-        const dx = e.clientX - (rect.left + rect.width / 2);
-        const dy = e.clientY - (rect.top + rect.height / 2);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 50) {
-          escapeNo();
-        }
-      });
-
-      no.addEventListener('touchstart', escapeNo);
+      let burstX = 0;
+      let burstY = 0;
+      let beatInterval;
 
       yes.addEventListener('click', () => {
+        // 1️⃣ CAPTURE position FIRST
+        const rect = yes.getBoundingClientRect();
+        burstX = rect.left + rect.width / 2;
+        burstY = rect.top + rect.height / 2;
+
+        // 2️⃣ THEN hide elements
         music.play();
         card.style.display = 'none';
         no.style.display = 'none';
+
         celebrate();
+
+        // 3️⃣ Initial burst + beat sync
+        flowerBurst();
+        beatInterval = setInterval(flowerBurst, 625);
+
+        // 4️⃣ Stop after 8 seconds
+        setTimeout(() => clearInterval(beatInterval), 8000);
       });
+
+      function flowerBurst() {
+        for (let i = 0; i < 12; i++) {
+          const flower = document.createElement('div');
+          flower.className = 'flower';
+          flower.textContent =
+            flowers[Math.floor(Math.random() * flowers.length)];
+
+          flower.style.left = burstX + 'px';
+          flower.style.top = burstY + 'px';
+
+          flower.style.setProperty('--x', `${Math.random() * 260 - 130}px`);
+          flower.style.setProperty('--y', `${Math.random() * 260 - 130}px`);
+
+          document.body.appendChild(flower);
+          setTimeout(() => flower.remove(), 2200);
+        }
+      }
 
       function celebrate() {
         const final = document.createElement('div');
         final.className = 'final';
         final.innerHTML = `
-        💖<br/>
-        Diya, you just made<br/>
-        <strong>Vikram</strong> very happy ❤️<br/><br/>
-        Happy Valentine’s Day 🌸
-      `;
+      💖<br/>
+      Diya, you just made<br/>
+      <strong>Vikram</strong> very happy ❤️<br/><br/>
+      Happy Valentine’s Day 🌸
+    `;
         document.body.appendChild(final);
 
         setInterval(() => {
@@ -223,7 +227,7 @@
           heart.style.animationDuration = 2 + Math.random() * 3 + 's';
           document.body.appendChild(heart);
           setTimeout(() => heart.remove(), 5000);
-        }, 120);
+        }, 140);
       }
     </script>
   </body>
